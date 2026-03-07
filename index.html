@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>JavaScript Engine Debugger Visualizer</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header>
+    <h1>JavaScript Engine Debugger Visualizer</h1>
+    <p class="subtitle">Understand how the JavaScript runtime and event loop work</p>
+  </header>
+
+  <div class="controls-bar">
+    <div class="controls-left">
+      <button id="btn-run" class="btn btn-run" title="Run simulation">
+        <span class="btn-icon">&#9654;</span> Run
+      </button>
+      <button id="btn-pause" class="btn btn-pause" disabled title="Pause simulation">
+        <span class="btn-icon">&#10074;&#10074;</span> Pause
+      </button>
+      <button id="btn-step" class="btn btn-step" title="Step through one action">
+        <span class="btn-icon">&#9654;&#10074;</span> Step
+      </button>
+      <button id="btn-reset" class="btn btn-reset" title="Reset simulation">
+        <span class="btn-icon">&#8635;</span> Reset
+      </button>
+    </div>
+    <div class="controls-right">
+      <label for="speed-slider">Speed:</label>
+      <input type="range" id="speed-slider" min="1" max="10" value="5">
+      <span id="speed-label">5x</span>
+    </div>
+  </div>
+
+  <div class="examples-bar">
+    <span class="examples-label">Examples:</span>
+    <button class="btn btn-example" data-example="sync">Sync Call Stack</button>
+    <button class="btn btn-example" data-example="async-timeout">setTimeout</button>
+    <button class="btn btn-example" data-example="promise">Promise</button>
+    <button class="btn btn-example" data-example="async-await">async/await</button>
+    <button class="btn btn-example" data-example="mixed">Mixed Async</button>
+  </div>
+
+  <main class="main-layout">
+    <!-- Left column: Code Editor + Debug Info -->
+    <section class="editor-section">
+      <div class="panel code-editor-panel">
+        <div class="panel-header">Code Editor</div>
+        <div class="editor-wrapper">
+          <div class="line-numbers" id="line-numbers"></div>
+          <textarea id="code-editor" spellcheck="false" placeholder="Write your JavaScript code here...">console.log("Start");
+
+setTimeout(() => {
+  console.log("Timeout");
+}, 0);
+
+console.log("End");</textarea>
+          <pre class="code-highlight" id="code-highlight"></pre>
+        </div>
+      </div>
+
+      <div class="panel debug-panel">
+        <div class="panel-header">Debug Information</div>
+        <div class="debug-content">
+          <div class="debug-item">
+            <span class="debug-label">Status:</span>
+            <span class="debug-value" id="debug-status">Idle</span>
+          </div>
+          <div class="debug-item">
+            <span class="debug-label">Current Function:</span>
+            <span class="debug-value" id="debug-current-fn">-</span>
+          </div>
+          <div class="debug-item">
+            <span class="debug-label">Stack Depth:</span>
+            <span class="debug-value" id="debug-stack-depth">0</span>
+          </div>
+          <div class="debug-item">
+            <span class="debug-label">Pending Web APIs:</span>
+            <span class="debug-value" id="debug-pending-apis">0</span>
+          </div>
+          <div class="debug-item">
+            <span class="debug-label">Pending Callbacks:</span>
+            <span class="debug-value" id="debug-pending-callbacks">0</span>
+          </div>
+          <div class="debug-item">
+            <span class="debug-label">Pending Microtasks:</span>
+            <span class="debug-value" id="debug-pending-microtasks">0</span>
+          </div>
+          <div class="debug-item">
+            <span class="debug-label">Step:</span>
+            <span class="debug-value" id="debug-step">0 / 0</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Right column: Visualizations -->
+    <section class="visualization-section">
+      <div class="viz-row">
+        <div class="panel call-stack-panel">
+          <div class="panel-header">Call Stack</div>
+          <div class="stack-container" id="call-stack">
+            <div class="stack-empty-msg">Stack is empty</div>
+          </div>
+        </div>
+
+        <div class="panel event-loop-panel">
+          <div class="panel-header">Event Loop</div>
+          <div class="event-loop-container" id="event-loop">
+            <div class="event-loop-circle" id="event-loop-circle">
+              <div class="event-loop-arrow"></div>
+            </div>
+            <div class="event-loop-status" id="event-loop-status">Idle</div>
+          </div>
+        </div>
+
+        <div class="panel webapis-panel">
+          <div class="panel-header">Web APIs</div>
+          <div class="webapis-container" id="web-apis">
+            <div class="empty-msg">No active APIs</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="viz-row">
+        <div class="panel microtask-panel">
+          <div class="panel-header">Microtask Queue <span class="queue-badge">(Promises)</span></div>
+          <div class="queue-container" id="microtask-queue">
+            <div class="empty-msg">Empty</div>
+          </div>
+        </div>
+
+        <div class="panel callback-panel">
+          <div class="panel-header">Callback Queue <span class="queue-badge">(setTimeout, etc.)</span></div>
+          <div class="queue-container" id="callback-queue">
+            <div class="empty-msg">Empty</div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Bottom: Execution Log & Educational Panel -->
+  <section class="bottom-section">
+    <div class="panel log-panel">
+      <div class="panel-header">
+        Execution Log & Timeline
+        <button class="btn-clear-log" id="btn-clear-log" title="Clear log">Clear</button>
+      </div>
+      <div class="log-container" id="execution-log"></div>
+    </div>
+
+    <div class="panel console-panel">
+      <div class="panel-header">Console Output</div>
+      <div class="console-container" id="console-output"></div>
+    </div>
+
+    <div class="panel education-panel">
+      <div class="panel-header">Educational Explanation</div>
+      <div class="education-container" id="education-text">
+        <p>Write some JavaScript code and click <strong>Run</strong> or <strong>Step</strong> to see how the JavaScript engine processes it.</p>
+        <p>The visualization shows how functions move through the <em>Call Stack</em>, how async operations use <em>Web APIs</em>, and how the <em>Event Loop</em> coordinates everything.</p>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <p>JavaScript Engine Debugger Visualizer &mdash; An educational tool for understanding the JS runtime</p>
+  </footer>
+
+  <script src="js/stack.js"></script>
+  <script src="js/queue.js"></script>
+  <script src="js/engine.js"></script>
+  <script src="js/ui.js"></script>
+  <script src="js/main.js"></script>
+</body>
+</html>
