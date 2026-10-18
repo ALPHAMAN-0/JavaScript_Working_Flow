@@ -5,12 +5,17 @@ An interactive educational tool that visualizes how the JavaScript runtime engin
 ## Architecture / How it Works
 
 ```mermaid
-flowchart LR
-    A[User] --> B[Javascript Working Flow]
-    B --> C{Logic}
-    C --> D[(Data)]
-    C --> E[Output]
-    D --> C
+flowchart TD
+  index.html --> style.css
+  index.html --> stack.js
+  index.html --> queue.js
+  index.html --> engine.js
+  index.html --> ui.js
+  index.html --> main.js
+  stack.js --> engine.js
+  queue.js --> engine.js
+  engine.js --> main.js
+  ui.js --> main.js
 ```
 
 
