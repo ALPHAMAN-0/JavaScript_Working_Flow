@@ -2,6 +2,18 @@
 
 An interactive educational tool that visualizes how the JavaScript runtime engine works. Write JavaScript code and watch it execute step-by-step through the Call Stack, Event Loop, Web APIs, and task queues.
 
+## Architecture / How it Works
+
+```mermaid
+flowchart LR
+    A[User] --> B[Javascript Working Flow]
+    B --> C{Logic}
+    C --> D[(Data)]
+    C --> E[Output]
+    D --> C
+```
+
+
 ## Features
 
 - **Code Editor** with line numbers and syntax highlighting
